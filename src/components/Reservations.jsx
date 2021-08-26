@@ -3,7 +3,7 @@
 // at that point we just need to FILL the state
 
 import { Component } from 'react'
-import { ListGroup } from 'react-bootstrap'
+import { ListGroup, Spinner } from 'react-bootstrap'
 
 class Reservations extends Component {
 
@@ -17,14 +17,18 @@ class Reservations extends Component {
     // 1)
     state = {
         // initial value?
-        reservations: []
+        reservations: [],
+        isLoading: true
     }
 
     clickHandler = () => {
         // does not create its own scope!
         // so it inherits the outside one
         // and this is why we get 'this' to be used
-        console.log(this.setState)
+        // console.log(this.setState)
+        this.setState({
+            reservations: []
+        })
     }
 
     // 3)
@@ -34,17 +38,32 @@ class Reservations extends Component {
         // this is the PERFECT PLACE for a get request
         // because the user is already watching your "static" part of the jsx
         // now we're going to perform here the fetch (a get request)
+        // it's somewhat like window.onload()
+
+        // componentDidMount will always happen JUST ONCE!!!
         try {
             let response = await fetch('https://striveschool-api.herokuapp.com/api/reservation')
             // console.log(response)
-            let reservations = await response.json()
-            // console.log(reservations)
-            this.setState({
-                reservations
-                // this is equal to reservations: reservations
-            })
+
+            if (response.ok) {
+                let reservations = await response.json()
+                // console.log(reservations)
+                this.setState({
+                    reservations,
+                    // this is equal to reservations: reservations
+                    isLoading: false
+                })
+            } else {
+                console.log('something went wrong with the server')
+                this.setState({
+                    isLoading: false
+                })
+            }
         } catch (error) {
             console.log(error)
+            this.setState({
+                isLoading: false
+            })
         }
     }
 
@@ -54,10 +73,15 @@ class Reservations extends Component {
         // or in the PROPS of the component
 
         console.log("I'm render")
+
         return (
             <div className="text-center">
                 <h2 onClick={this.clickHandler}>RESERVATIONS</h2>
                 <ListGroup>
+                    {
+                        this.state.isLoading &&
+                        <Spinner animation="border" variant="success" className="mx-auto" />
+                    }
                     {/* 2 */}
                     {
                         this.state.reservations.map(reservation => (
