@@ -3,7 +3,8 @@
 // at that point we just need to FILL the state
 
 import { Component } from 'react'
-import { ListGroup, Spinner } from 'react-bootstrap'
+import { Alert, ListGroup, Spinner } from 'react-bootstrap'
+import { format, parseISO } from 'date-fns'
 
 class Reservations extends Component {
 
@@ -18,14 +19,16 @@ class Reservations extends Component {
     state = {
         // initial value?
         reservations: [],
-        isLoading: true
+        isLoading: true,
+        isError: false
     }
 
-    clickHandler = () => {
+    clickHandler = (e) => {
         // does not create its own scope!
         // so it inherits the outside one
         // and this is why we get 'this' to be used
         // console.log(this.setState)
+        console.log(e)
         this.setState({
             reservations: []
         })
@@ -56,13 +59,15 @@ class Reservations extends Component {
             } else {
                 console.log('something went wrong with the server')
                 this.setState({
-                    isLoading: false
+                    isLoading: false,
+                    isError: true
                 })
             }
         } catch (error) {
             console.log(error)
             this.setState({
-                isLoading: false
+                isLoading: false,
+                isError: true
             })
         }
     }
@@ -74,21 +79,47 @@ class Reservations extends Component {
 
         console.log("I'm render")
 
+        // ? : this is the ternary operator
+        // && this is the short-circuit operator
         return (
             <div className="text-center">
                 <h2 onClick={this.clickHandler}>RESERVATIONS</h2>
-                <ListGroup>
-                    {
-                        this.state.isLoading &&
-                        <Spinner animation="border" variant="success" className="mx-auto" />
-                    }
-                    {/* 2 */}
-                    {
-                        this.state.reservations.map(reservation => (
-                            <ListGroup.Item key={reservation._id}>{reservation.name}</ListGroup.Item>
-                        ))
-                    }
-                </ListGroup>
+                {
+                    this.state.isLoading && // this is called the SHORT-CIRCUIT operator
+                    <Spinner animation="border" variant="success" className="mx-auto" />
+                }
+                {
+                    this.state.isError &&
+                    <Alert variant="danger">
+                        An error occurred!
+                    </Alert>
+                }
+                {/* the "no reservations" message should come up if isLoading is false and */}
+                {/* the reservations array is empty */}
+                {
+
+                    (this.state.reservations.length === 0 && !this.state.isLoading) ? (
+                        <div>NO RESERVATIONS TO SHOW</div>) :
+                        <ListGroup>
+                            {/* 2 */}
+                            {
+
+                                // we want to convert our dateTime string into a more readable date string
+                                // we need two steps:
+                                // 1) convert the string we got from the database (the ugly one) into a proper Date object
+                                // 2) once we have a proper Date object we can convert it back to a string, in a nicer format
+                                this.state.reservations.map(reservation => (
+                                    <ListGroup.Item key={reservation._id}>
+                                        {reservation.name} for {reservation.numberOfPeople} at {
+                                            format( // 2)
+                                                parseISO(reservation.dateTime) // 1)
+                                                , "yyyy MMMM dd | HH:m")
+                                        }
+                                    </ListGroup.Item>
+                                ))
+                            }
+                        </ListGroup>
+                }
             </div>
         )
     }
