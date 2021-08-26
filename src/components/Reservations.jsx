@@ -20,16 +20,48 @@ class Reservations extends Component {
         reservations: []
     }
 
+    clickHandler = () => {
+        // does not create its own scope!
+        // so it inherits the outside one
+        // and this is why we get 'this' to be used
+        console.log(this.setState)
+    }
+
+    // 3)
+    componentDidMount = async () => {
+        console.log("I'm componentDidMount")
+        // here things happen AFTER the initial render
+        // this is the PERFECT PLACE for a get request
+        // because the user is already watching your "static" part of the jsx
+        // now we're going to perform here the fetch (a get request)
+        try {
+            let response = await fetch('https://striveschool-api.herokuapp.com/api/reservation')
+            // console.log(response)
+            let reservations = await response.json()
+            // console.log(reservations)
+            this.setState({
+                reservations
+                // this is equal to reservations: reservations
+            })
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
     render() {
-        // console.log(this)
+
+        // the render method fires AGAIN every time there's a change in the STATE
+        // or in the PROPS of the component
+
+        console.log("I'm render")
         return (
             <div className="text-center">
-                <h2>RESERVATIONS</h2>
+                <h2 onClick={this.clickHandler}>RESERVATIONS</h2>
                 <ListGroup>
                     {/* 2 */}
                     {
                         this.state.reservations.map(reservation => (
-                            <ListGroup.Item>RESERVATION</ListGroup.Item>
+                            <ListGroup.Item key={reservation._id}>{reservation.name}</ListGroup.Item>
                         ))
                     }
                 </ListGroup>

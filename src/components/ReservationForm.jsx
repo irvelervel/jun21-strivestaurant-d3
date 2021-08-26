@@ -37,7 +37,7 @@ class ReservationForm extends Component {
         this.setState({
             reservation: {
                 ...this.state.reservation,
-                // copying over phone, numberOfPeople, smoking etc.
+                // copying over name, phone, numberOfPeople, smoking etc.
                 [propertyName]: propertyName === 'smoking'
                     ? e.target.checked
                     : e.target.value, // for every field but the smoking
